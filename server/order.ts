@@ -1,12 +1,12 @@
 // order.js - 拼多多下单系统
 
 import to from 'await-to-js';
-import path from 'path';
+import * as path from 'path';
 import puppeteer from 'puppeteer';
 
 // const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 
-import fs from 'fs';
+import * as fs from 'fs';
 
 export async function order(options: {
   mobile: string;

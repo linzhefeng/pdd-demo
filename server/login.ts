@@ -1,7 +1,7 @@
 // login.ts - 多账号管理系统
 
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 import puppeteer from 'puppeteer';
 import to from 'await-to-js'
 
