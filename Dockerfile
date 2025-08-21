@@ -7,6 +7,6 @@ WORKDIR /app
 COPY . /app                                                                                      
                                                                                                  
                                                                                                  
-RUN yarn install                                                                                 
+RUN cnpm install                                                                                 
                                                                                                  
 # 完成  
