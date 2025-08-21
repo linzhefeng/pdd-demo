@@ -15,7 +15,11 @@ docker-compose up -d --build
 ### 方法2：使用Dockerfile
 
 ```bash
-# 使用buildkite/puppeteer镜像（推荐）
+# 使用最终版本（Node 18 + Chrome）
+docker build -f Dockerfile.final -t pdd-demo .
+docker run -p 3000:3000 pdd-demo
+
+# 或者使用buildkite/puppeteer镜像
 docker build -t pdd-demo .
 docker run -p 3000:3000 pdd-demo
 
@@ -23,6 +27,20 @@ docker run -p 3000:3000 pdd-demo
 docker build -f Dockerfile.simple -t pdd-demo-simple .
 docker run -p 3000:3000 pdd-demo-simple
 ```
+
+## 修复构建错误
+
+如果之前遇到curl/wget错误，我们已经：
+
+1. **在Dockerfile中**：
+   - 添加了wget和gnupg安装
+   - 使用wget替代curl
+   - 修复了apt-key和源配置
+
+2. **在Dockerfile.final中**：
+   - 使用官方Node 18镜像
+   - 包含完整的Chrome安装
+   - 使用非root用户运行
 
 ## 解决权限问题
 
