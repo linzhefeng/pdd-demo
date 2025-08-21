@@ -3,8 +3,11 @@ FROM buildkite/puppeteer:latest
 
 WORKDIR /app
 
+# 更新包列表并安装wget（如果curl不可用）
+RUN apt-get update && apt-get install -y wget gnupg
+
 # 设置Node.js版本为18
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+RUN wget -qO- https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs \
     && node --version \
     && npm --version
@@ -20,7 +23,7 @@ ENV NODE_ENV=production
 ENV PORT=3000
 
 # 拷贝项目文件
-COPY . /app
+COPY --chown=pptruser:pptruser . /app
 
 # 切换用户
 USER pptruser
