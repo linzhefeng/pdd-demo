@@ -7,6 +7,5 @@ WORKDIR /app
 COPY . /app                                                                                      
                                                                                                  
                                                                                                  
-RUN npx cnpm install --registry=https://registry.npmmirror.com                                                                                 
                                                                                                  
 # 完成  
