@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  pdd-demo:
+    build: .
+    container_name: pdd-demo-container
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    volumes:
+      - ./cookies:/app/server/cookies
+    # 禁用沙箱模式
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - seccomp:unconfined
+    # 以非root用户运行
+    user: "pptruser"
+    restart: unless-stopped
