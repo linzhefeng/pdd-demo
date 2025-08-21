@@ -58,41 +58,92 @@ function getAccountCookiesPath(mobile) {
 }
 // 第一步：打开登录页面并输入手机号
 async function initLogin(mobile) {
+    console.log(`[${mobile}] 开始初始化登录流程...`);
     const instance = instanceMap.get(mobile);
     if (instance) {
+        console.log(`[${mobile}] 已存在实例，返回现有实例`);
         return instance;
     }
+    console.log(`[${mobile}] 启动浏览器...`);
     const browser = await puppeteer_1.default.launch({
         headless: false,
         defaultViewport: null,
     });
+    console.log(`[${mobile}] 浏览器已启动`);
     const page = await browser.newPage();
+    console.log(`[${mobile}] 新页面已创建`);
+    console.log(`[${mobile}] 正在访问登录页面...`);
     await page.goto('https://mobile.pinduoduo.com/login.html', {
         waitUntil: 'networkidle2',
     });
+    console.log(`[${mobile}] 登录页面已加载`);
     // 等待登录按钮出现
+    console.log(`[${mobile}] 等待登录按钮出现...`);
     await page.waitForSelector('.phone-login', { timeout: 3000 });
+    console.log(`[${mobile}] 登录按钮已出现`);
     // 点击 .phone-login & sleep 1000ms
+    console.log(`[${mobile}] 点击登录按钮...`);
     await page.click('.phone-login');
-    await (0, await_to_js_1.default)(page.waitForSelector('.internation-code-input', { timeout: 3000 }));
-    await (0, await_to_js_1.default)(page.type('.internation-code-input', '86'));
-    // 等待手机号输入框出现
-    await (0, await_to_js_1.default)(page.waitForSelector('#phone-number', { timeout: 3000 }));
-    // 输入手机号
-    await (0, await_to_js_1.default)(page.type('#phone-number', mobile));
-    // 等待手机号输入框出现
-    await (0, await_to_js_1.default)(page.waitForSelector('#user-mobile', { timeout: 3000 }));
-    // 输入手机号
-    await (0, await_to_js_1.default)(page.type('#user-mobile', mobile));
+    console.log(`[${mobile}] 登录按钮已点击`);
+    console.log(`[${mobile}] 等待国际区号输入框...`);
+    const [waitCodeError, waitCodeResult] = await (0, await_to_js_1.default)(page.waitForSelector('.internation-code-input', { timeout: 3000 }));
+    if (waitCodeError) {
+        console.error(`[${mobile}] 等待国际区号输入框失败:`, waitCodeError.message);
+    }
+    else {
+        console.log(`[${mobile}] 国际区号输入框已出现`);
+    }
+    console.log(`[${mobile}] 输入国际区号...`);
+    const [typeCodeError, typeCodeResult] = await (0, await_to_js_1.default)(page.type('.internation-code-input', '86'));
+    if (typeCodeError) {
+        console.error(`[${mobile}] 输入国际区号失败:`, typeCodeError.message);
+    }
+    else {
+        console.log(`[${mobile}] 国际区号已输入`);
+    }
+    console.log(`[${mobile}] 等待手机号输入框(#phone-number)...`);
+    const [waitPhoneError1, waitPhoneResult1] = await (0, await_to_js_1.default)(page.waitForSelector('#phone-number', { timeout: 3000 }));
+    if (waitPhoneError1) {
+        console.error(`[${mobile}] 等待手机号输入框(#phone-number)失败:`, waitPhoneError1.message);
+    }
+    else {
+        console.log(`[${mobile}] 手机号输入框(#phone-number)已出现`);
+    }
+    console.log(`[${mobile}] 输入手机号到#phone-number...`);
+    const [typePhoneError1, typePhoneResult1] = await (0, await_to_js_1.default)(page.type('#phone-number', mobile));
+    if (typePhoneError1) {
+        console.error(`[${mobile}] 输入手机号到#phone-number失败:`, typePhoneError1.message);
+    }
+    else {
+        console.log(`[${mobile}] 手机号已输入到#phone-number`);
+    }
+    console.log(`[${mobile}] 等待手机号输入框(#user-mobile)...`);
+    const [waitPhoneError2, waitPhoneResult2] = await (0, await_to_js_1.default)(page.waitForSelector('#user-mobile', { timeout: 3000 }));
+    if (waitPhoneError2) {
+        console.error(`[${mobile}] 等待手机号输入框(#user-mobile)失败:`, waitPhoneError2.message);
+    }
+    else {
+        console.log(`[${mobile}] 手机号输入框(#user-mobile)已出现`);
+    }
+    console.log(`[${mobile}] 输入手机号到#user-mobile...`);
+    const [typePhoneError2, typePhoneResult2] = await (0, await_to_js_1.default)(page.type('#user-mobile', mobile));
+    if (typePhoneError2) {
+        console.error(`[${mobile}] 输入手机号到#user-mobile失败:`, typePhoneError2.message);
+    }
+    else {
+        console.log(`[${mobile}] 手机号已输入到#user-mobile`);
+    }
     // 点击获取验证码按钮（如果存在）
+    console.log(`[${mobile}] 尝试点击获取验证码按钮...`);
     try {
         await page.click('button[type="button"]:not([disabled])');
+        console.log(`[${mobile}] 获取验证码按钮已点击`);
     }
     catch (error) {
-        console.log('未找到获取验证码按钮或按钮不可点击');
+        console.error(`[${mobile}] 点击获取验证码按钮失败:`, error.message);
     }
     instanceMap.set(mobile, { browser, page });
-    console.log('请输入验证码');
+    console.log(`[${mobile}] 初始化登录完成，请输入验证码`);
 }
 // 第二步：输入验证码并完成登录
 async function completeLogin(mobile, code) {
