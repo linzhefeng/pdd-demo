@@ -1,9 +1,9 @@
 // login.ts - 多账号管理系统
 
+import to from 'await-to-js';
 import * as fs from 'fs';
 import * as path from 'path';
 import puppeteer from 'puppeteer';
-import to from 'await-to-js'
 
 // 确保cookies目录存在
 const COOKIES_DIR = path.join(__dirname, 'cookies');
@@ -21,23 +21,28 @@ function getAccountCookiesPath(mobile: string): string {
 // 第一步：打开登录页面并输入手机号
 export async function initLogin(mobile: string) {
   console.log(`[${mobile}] 开始初始化登录流程...`);
-  
+
   const instance = instanceMap.get(mobile);
   if (instance) {
     console.log(`[${mobile}] 已存在实例，返回现有实例`);
     return instance;
   }
-  
+
   console.log(`[${mobile}] 启动浏览器...`);
   const browser = await puppeteer.launch({
     headless: false,
     defaultViewport: null,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      // 其他必要参数
+    ],
   });
   console.log(`[${mobile}] 浏览器已启动`);
-  
+
   const page = await browser.newPage();
   console.log(`[${mobile}] 新页面已创建`);
-  
+
   console.log(`[${mobile}] 正在访问登录页面...`);
   await page.goto('https://mobile.pinduoduo.com/login.html', {
     waitUntil: 'networkidle2',
@@ -55,7 +60,9 @@ export async function initLogin(mobile: string) {
   console.log(`[${mobile}] 登录按钮已点击`);
 
   console.log(`[${mobile}] 等待国际区号输入框...`);
-  const [waitCodeError, waitCodeResult] = await to(page.waitForSelector('.internation-code-input',{timeout:3000}));
+  const [waitCodeError, waitCodeResult] = await to(
+    page.waitForSelector('.internation-code-input', { timeout: 3000 })
+  );
   if (waitCodeError) {
     console.error(`[${mobile}] 等待国际区号输入框失败:`, waitCodeError.message);
   } else {
@@ -63,7 +70,9 @@ export async function initLogin(mobile: string) {
   }
 
   console.log(`[${mobile}] 输入国际区号...`);
-  const [typeCodeError, typeCodeResult] = await to(page.type('.internation-code-input','86'));
+  const [typeCodeError, typeCodeResult] = await to(
+    page.type('.internation-code-input', '86')
+  );
   if (typeCodeError) {
     console.error(`[${mobile}] 输入国际区号失败:`, typeCodeError.message);
   } else {
@@ -71,33 +80,53 @@ export async function initLogin(mobile: string) {
   }
 
   console.log(`[${mobile}] 等待手机号输入框(#phone-number)...`);
-  const [waitPhoneError1, waitPhoneResult1] = await to(page.waitForSelector('#phone-number', { timeout: 3000 }));
+  const [waitPhoneError1, waitPhoneResult1] = await to(
+    page.waitForSelector('#phone-number', { timeout: 3000 })
+  );
   if (waitPhoneError1) {
-    console.error(`[${mobile}] 等待手机号输入框(#phone-number)失败:`, waitPhoneError1.message);
+    console.error(
+      `[${mobile}] 等待手机号输入框(#phone-number)失败:`,
+      waitPhoneError1.message
+    );
   } else {
     console.log(`[${mobile}] 手机号输入框(#phone-number)已出现`);
   }
 
   console.log(`[${mobile}] 输入手机号到#phone-number...`);
-  const [typePhoneError1, typePhoneResult1] = await to(page.type('#phone-number', mobile));
+  const [typePhoneError1, typePhoneResult1] = await to(
+    page.type('#phone-number', mobile)
+  );
   if (typePhoneError1) {
-    console.error(`[${mobile}] 输入手机号到#phone-number失败:`, typePhoneError1.message);
+    console.error(
+      `[${mobile}] 输入手机号到#phone-number失败:`,
+      typePhoneError1.message
+    );
   } else {
     console.log(`[${mobile}] 手机号已输入到#phone-number`);
   }
 
   console.log(`[${mobile}] 等待手机号输入框(#user-mobile)...`);
-  const [waitPhoneError2, waitPhoneResult2] = await to(page.waitForSelector('#user-mobile', { timeout: 3000 }));
+  const [waitPhoneError2, waitPhoneResult2] = await to(
+    page.waitForSelector('#user-mobile', { timeout: 3000 })
+  );
   if (waitPhoneError2) {
-    console.error(`[${mobile}] 等待手机号输入框(#user-mobile)失败:`, waitPhoneError2.message);
+    console.error(
+      `[${mobile}] 等待手机号输入框(#user-mobile)失败:`,
+      waitPhoneError2.message
+    );
   } else {
     console.log(`[${mobile}] 手机号输入框(#user-mobile)已出现`);
   }
 
   console.log(`[${mobile}] 输入手机号到#user-mobile...`);
-  const [typePhoneError2, typePhoneResult2] = await to(page.type('#user-mobile', mobile));
+  const [typePhoneError2, typePhoneResult2] = await to(
+    page.type('#user-mobile', mobile)
+  );
   if (typePhoneError2) {
-    console.error(`[${mobile}] 输入手机号到#user-mobile失败:`, typePhoneError2.message);
+    console.error(
+      `[${mobile}] 输入手机号到#user-mobile失败:`,
+      typePhoneError2.message
+    );
   } else {
     console.log(`[${mobile}] 手机号已输入到#user-mobile`);
   }
@@ -158,11 +187,11 @@ export function getAllLoggedInAccounts(): string[] {
   if (!fs.existsSync(COOKIES_DIR)) {
     return [];
   }
-  
+
   const files = fs.readdirSync(COOKIES_DIR);
   return files
-    .filter(file => file.endsWith('.json'))
-    .map(file => path.basename(file, '.json'));
+    .filter((file) => file.endsWith('.json'))
+    .map((file) => path.basename(file, '.json'));
 }
 
 // 获取指定账号的cookies
@@ -171,7 +200,7 @@ export function getAccountCookies(mobile: string): any[] | null {
   if (!fs.existsSync(cookiesPath)) {
     return null;
   }
-  
+
   const cookiesData = fs.readFileSync(cookiesPath, 'utf8');
   return JSON.parse(cookiesData);
 }

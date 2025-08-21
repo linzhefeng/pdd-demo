@@ -16,6 +16,11 @@ export async function order(options: {
   const browser = await puppeteer.launch({
     headless: false,
     defaultViewport: null,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      // 其他必要参数
+    ],
   });
   const { mobile, url, payType } = options;
 
@@ -149,7 +154,7 @@ export async function order(options: {
         // span with text: 微信支付
         page.waitForSelector('span ::-p-text(微信支付)', { timeout: 3000 })
       );
-      console.log('type',payTypeBtn)
+      console.log('type', payTypeBtn);
       // click 微信支付
       await payTypeBtn?.click();
       const [, payBtnV1] = await to(
@@ -158,7 +163,7 @@ export async function order(options: {
       // click 立即支付
       await payBtnV1?.click();
 
-       const [, payBtnV2] = await to(
+      const [, payBtnV2] = await to(
         page.waitForSelector('span ::-p-text(提交订单)', { timeout: 3000 })
       );
       // click 立即支付
