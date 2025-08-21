@@ -30,12 +30,32 @@ export async function initLogin(mobile: string) {
 
   console.log(`[${mobile}] 启动浏览器...`);
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: true,
     defaultViewport: null,
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
-      // 其他必要参数
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--disable-web-security',
+      '--disable-features=VizDisplayCompositor',
+      '--disable-background-timer-throttling',
+      '--disable-backgrounding-occluded-windows',
+      '--disable-renderer-backgrounding',
+      '--disable-extensions',
+      '--disable-plugins',
+      '--disable-default-apps',
+      '--no-first-run',
+      '--no-default-browser-check',
+      '--single-process',
+      '--disable-crash-reporter',
+      '--disable-background-networking',
+      '--disable-sync',
+      '--disable-translate',
+      '--metrics-recording-only',
+      '--safebrowsing-disable-auto-update',
+      '--disable-web-resources',
+      '--remote-debugging-port=0'
     ],
   });
   console.log(`[${mobile}] 浏览器已启动`);
