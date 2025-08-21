@@ -43,11 +43,18 @@ RUN apt-get update && apt-get install -y \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# 把当前目录的所有内容都拷贝到app工作目录
-COPY . /app
+# 创建非root用户并切换到该用户
+RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
+    && mkdir -p /home/pptruser/Downloads \
+    && chown -R pptruser:pptruser /home/pptruser \
+    && chown -R pptruser:pptruser /app
 
-# 安装项目依赖（如果有package.json的话）
+# 切换到非root用户
+USER pptruser
+
+# 拷贝项目文件
+COPY --chown=pptruser:pptruser . /app
+
+# 安装依赖（如果需要）
 # RUN npm install
-
-# 完成
     
