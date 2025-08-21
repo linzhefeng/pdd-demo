@@ -30,17 +30,20 @@ docker run -p 3000:3000 pdd-demo-simple
 
 ## 修复构建错误
 
-如果之前遇到curl/wget错误，我们已经：
+如果之前遇到Debian buster仓库404错误，我们已经：
 
-1. **在Dockerfile中**：
-   - 添加了wget和gnupg安装
-   - 使用wget替代curl
-   - 修复了apt-key和源配置
+1. **升级到Debian Bookworm**：
+   - 使用`node:18-bookworm`替代过时的buster
+   - 修复了所有仓库404问题
 
-2. **在Dockerfile.final中**：
-   - 使用官方Node 18镜像
-   - 包含完整的Chrome安装
-   - 使用非root用户运行
+2. **修复GPG密钥问题**：
+   - 使用新的GPG密钥格式
+   - 修复了签名验证问题
+
+3. **提供多个构建选项**：
+   - `Dockerfile.minimal`：使用官方Puppeteer镜像（推荐）
+   - `Dockerfile.final`：使用Node 18 + Chrome
+   - `Dockerfile.simple`：使用Node 18-slim + Chrome
 
 ## 解决权限问题
 

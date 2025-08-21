@@ -4,7 +4,7 @@ services:
   pdd-demo:
     build: 
       context: .
-      dockerfile: Dockerfile.final
+      dockerfile: Dockerfile.minimal
     container_name: pdd-demo-container
     ports:
       - "3000:3000"

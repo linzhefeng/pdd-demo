@@ -1,5 +1,5 @@
-# 使用官方的Node.js 18镜像
-FROM node:18-slim
+# 使用官方的Node.js 18镜像（基于Debian Bookworm）
+FROM node:18-bookworm-slim
 
 # 安装必要的依赖
 RUN apt-get update && apt-get install -y \
