@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const await_to_js_1 = __importDefault(require("await-to-js"));
 const login_1 = require("./login");
+const utils_1 = require("./utils");
 const koa_1 = __importDefault(require("koa"));
 const koa_bodyparser_1 = __importDefault(require("koa-bodyparser"));
 const koa_router_1 = __importDefault(require("koa-router"));
@@ -17,14 +18,14 @@ const router = new koa_router_1.default();
 app.use((0, koa_bodyparser_1.default)());
 // 获取所有已登录账号
 router.get('/accounts', async (ctx) => {
-    const accounts = (0, login_1.getAllLoggedInAccounts)();
+    const accounts = (0, utils_1.getAllLoggedInAccounts)();
     ctx.status = 200;
     ctx.body = { accounts };
 });
 // 获取指定账号的cookies
 router.get('/account/:mobile/cookies', async (ctx) => {
     const { mobile } = ctx.params;
-    const cookies = (0, login_1.getAccountCookies)(mobile);
+    const cookies = (0, utils_1.getAccountCookies)(mobile);
     if (!cookies) {
         ctx.status = 404;
         ctx.body = { error: '账号未登录或cookies不存在' };
@@ -36,7 +37,7 @@ router.get('/account/:mobile/cookies', async (ctx) => {
 // 删除指定账号
 router.delete('/account/:mobile', async (ctx) => {
     const { mobile } = ctx.params;
-    const success = (0, login_1.removeAccount)(mobile);
+    const success = (0, utils_1.removeAccount)(mobile);
     if (!success) {
         ctx.status = 404;
         ctx.body = { error: '账号不存在' };

@@ -1,11 +1,9 @@
 import to from 'await-to-js';
 import {
   completeLogin,
-  getAccountCookies,
-  getAllLoggedInAccounts,
   initLogin,
-  removeAccount,
 } from './login';
+import { getAccountCookies, getAllLoggedInAccounts, removeAccount } from './utils';
 
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';

@@ -1,22 +1,14 @@
 // login.ts - 多账号管理系统
 
 import to from 'await-to-js';
-import * as fs from 'fs';
-import * as path from 'path';
-import puppeteer from 'puppeteer';
+import { Browser } from 'puppeteer';
+import {
+  createAndConfigurePage,
+  initBrowser,
+  saveAccountCookies,
+} from './utils';
 
-// 确保cookies目录存在
-const COOKIES_DIR = path.join(__dirname, 'cookies');
-if (!fs.existsSync(COOKIES_DIR)) {
-  fs.mkdirSync(COOKIES_DIR, { recursive: true });
-}
-
-const instanceMap = new Map<string, { browser: any; page: any }>();
-
-// 获取账号cookies文件路径
-function getAccountCookiesPath(mobile: string): string {
-  return path.join(COOKIES_DIR, `${mobile}.json`);
-}
+const instanceMap = new Map<string, { browser: Browser; page: any }>();
 
 // 第一步：打开登录页面并输入手机号
 export async function initLogin(mobile: string) {
@@ -29,13 +21,10 @@ export async function initLogin(mobile: string) {
   }
 
   console.log(`[${mobile}] 启动浏览器...`);
-  const browser = await puppeteer.launch({
-    headless: true,
-    defaultViewport: null,
-  });
+  const browser = await initBrowser();
   console.log(`[${mobile}] 浏览器已启动`);
 
-  const page = await browser.newPage();
+  const page = await createAndConfigurePage(browser, false);
   console.log(`[${mobile}] 新页面已创建`);
 
   console.log(`[${mobile}] 正在访问登录页面...`);
@@ -166,8 +155,7 @@ export async function completeLogin(mobile: string, code: string) {
 
   const cookies = await page.cookies();
   // 为每个账号单独保存cookies
-  const cookiesPath = getAccountCookiesPath(mobile);
-  fs.writeFileSync(cookiesPath, JSON.stringify(cookies, null, 2));
+  saveAccountCookies(mobile, cookies);
   console.log(`账号 ${mobile} 的 Cookie 已保存`);
 
   // 关闭浏览器
@@ -175,37 +163,4 @@ export async function completeLogin(mobile: string, code: string) {
 
   // 清空实例
   instanceMap.delete(mobile);
-}
-
-// 获取所有已登录账号
-export function getAllLoggedInAccounts(): string[] {
-  if (!fs.existsSync(COOKIES_DIR)) {
-    return [];
-  }
-
-  const files = fs.readdirSync(COOKIES_DIR);
-  return files
-    .filter((file) => file.endsWith('.json'))
-    .map((file) => path.basename(file, '.json'));
-}
-
-// 获取指定账号的cookies
-export function getAccountCookies(mobile: string): any[] | null {
-  const cookiesPath = getAccountCookiesPath(mobile);
-  if (!fs.existsSync(cookiesPath)) {
-    return null;
-  }
-
-  const cookiesData = fs.readFileSync(cookiesPath, 'utf8');
-  return JSON.parse(cookiesData);
-}
-
-// 删除指定账号的登录信息
-export function removeAccount(mobile: string): boolean {
-  const cookiesPath = getAccountCookiesPath(mobile);
-  if (fs.existsSync(cookiesPath)) {
-    fs.unlinkSync(cookiesPath);
-    return true;
-  }
-  return false;
 }

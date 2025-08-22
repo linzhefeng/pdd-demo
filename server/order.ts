@@ -1,55 +1,29 @@
 // order.js - 拼多多下单系统
 
 import to from 'await-to-js';
-import * as path from 'path';
-import puppeteer from 'puppeteer';
 
 // const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 
-import * as fs from 'fs';
+import {
+  createAndConfigurePage,
+  extractSchemaFromPage,
+  initBrowser,
+  setPageCookies,
+} from './utils';
 
 export async function order(options: {
   mobile: string;
   url: string;
   payType: Array<'wx' | 'zfb'>;
 }) {
-  const browser = await puppeteer.launch({
-    headless: true,
-    defaultViewport: null,
-  });
+  const browser = await initBrowser();
   const { mobile, url, payType } = options;
 
   console.log('🚀 ~ order ~ options:', options);
 
   const openPage = async () => {
-    const page = await browser.newPage();
-
-    // iPhone 12 参数
-    const iPhone12 = {
-      name: 'iPhone 12',
-      userAgent:
-        'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1',
-      viewport: {
-        width: 390,
-        height: 844,
-        deviceScaleFactor: 3,
-        isMobile: true,
-        hasTouch: true,
-        isLandscape: false,
-      },
-    };
-    await page.emulate(iPhone12);
-
-    const COOKIES_DIR = path.join(__dirname, 'cookies');
-    // 读取 cookies
-    const cookies = JSON.parse(
-      fs.readFileSync(path.join(COOKIES_DIR, `${mobile}.json`)).toString()
-    );
-    // 如果没有
-    if (!cookies) {
-      throw new Error('请先登录');
-    }
-    await page.setCookie(...cookies);
+    const page = await createAndConfigurePage(browser, true);
+    await setPageCookies(page, mobile);
     return page;
   };
 
@@ -87,7 +61,9 @@ export async function order(options: {
       page.on('console', (msg: any) => {
         const text = msg.text();
         if (text.includes('weixin://')) {
-          const match = text.match(/weixin:\/\/[\w\-\/?#=&%.]+/);
+          const match = text.match(
+            new RegExp('weixin://([\\w\\-\\/\\?#=&%.]+)')
+          );
           if (match) {
             wxSchema = match[0];
           }
@@ -151,18 +127,18 @@ export async function order(options: {
       );
       console.log('type', payTypeBtn);
       // click 微信支付
-      await payTypeBtn?.click();
+      await (payTypeBtn as any)?.click();
       const [, payBtnV1] = await to(
         page.waitForSelector('span ::-p-text(立即支付)', { timeout: 3000 })
       );
       // click 立即支付
-      await payBtnV1?.click();
+      await (payBtnV1 as any)?.click();
 
       const [, payBtnV2] = await to(
         page.waitForSelector('span ::-p-text(提交订单)', { timeout: 3000 })
       );
       // click 立即支付
-      await payBtnV2?.click();
+      await (payBtnV2 as any)?.click();
       // 等待支付方式区域出现
       // 等待页面跳转和 schema 出现
       await new Promise((resolve) => setTimeout(resolve, 8000));
@@ -179,7 +155,9 @@ export async function order(options: {
           if (wxLink) return wxLink;
           // 检查文本
           const bodyText = document.body.innerText;
-          const match = bodyText.match(/weixin:\/\/[\w\-\/?#=&%.]+/);
+          const match = bodyText.match(
+            new RegExp('weixin://([\\w\\-\\/\\?#=&%.]+)')
+          );
           if (match) return match[0];
           return null;
         });
@@ -196,64 +174,18 @@ export async function order(options: {
         page.waitForSelector('span ::-p-text(支付宝)', { timeout: 15000 })
       );
       // click 支付宝
-      await payTypeBtn?.click();
+      await (payTypeBtn as any)?.click();
 
       // 等待“立即支付”按钮出现并点击
       const [, payBtn] = await to(
         page.waitForSelector('span ::-p-text(立即支付)', { timeout: 10000 })
       );
-      await payBtn?.click();
+      await (payBtn as any)?.click();
       // 等待跳转到支付二维码页面
       await new Promise((resolve) => setTimeout(resolve, 5000));
 
       const keyWord = 'alipay://';
-      // 1. 抓取所有 a 标签的 href
-      const aLinks = await page.$$eval('a', (as: any) =>
-        as.map((a: any) => a.href)
-      );
-      const alipayLinks = aLinks.filter((link: string) =>
-        link.includes(keyWord)
-      ); // 支付宝
-      if (alipayLinks.length > 0) {
-        zfbSchema = alipayLinks[0];
-      }
-      // 2. 检查 window.location.href
-      const pageUrl = await page.evaluate(() => window.location.href);
-      if (pageUrl.includes(keyWord)) {
-        zfbSchema = pageUrl;
-      }
-      // 3. 检查 img src
-      const imgSrcs = await page.$$eval('img', (imgs: any) =>
-        imgs.map((img: any) => img.src)
-      );
-      const imgAlipayLinks = imgSrcs.filter((src: string) =>
-        src.includes(keyWord)
-      ); // 支付宝
-      if (imgAlipayLinks.length > 0) {
-        console.log('图片src中发现支付宝支付链接：', imgAlipayLinks);
-        zfbSchema = imgAlipayLinks[0];
-      }
-      // 4. 检查 iframe src
-      const iframeSrcs = await page.$$eval('iframe', (iframes: any) =>
-        iframes.map((f: any) => f.src)
-      );
-      const iframeAlipayLinks = iframeSrcs.filter((src: string) =>
-        src.includes(keyWord)
-      );
-      if (iframeAlipayLinks.length > 0) {
-        console.log('iframe中发现支付宝支付链接：', iframeAlipayLinks);
-        zfbSchema = iframeAlipayLinks[0];
-      }
-      // 5. 检查页面内所有文本内容（兜底）
-      const bodyText = await page.evaluate(() => document.body.innerText);
-      // alipay://
-      const textAlipayLinks = (
-        bodyText.match(/alipay:\/\/[\w\-\/?#=&%.]+/g) || []
-      ).filter((link: string) => link.includes(keyWord));
-      if (textAlipayLinks.length > 0) {
-        console.log('页面文本中发现支付宝支付链接：', textAlipayLinks);
-        zfbSchema = textAlipayLinks[0];
-      }
+      zfbSchema = await extractSchemaFromPage(page, keyWord);
     }
   }
   await browser.close();
