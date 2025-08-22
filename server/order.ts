@@ -16,31 +16,6 @@ export async function order(options: {
   const browser = await puppeteer.launch({
     headless: true,
     defaultViewport: null,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-      '--disable-web-security',
-      '--disable-features=VizDisplayCompositor',
-      '--disable-background-timer-throttling',
-      '--disable-backgrounding-occluded-windows',
-      '--disable-renderer-backgrounding',
-      '--disable-extensions',
-      '--disable-plugins',
-      '--disable-default-apps',
-      '--no-first-run',
-      '--no-default-browser-check',
-      '--single-process',
-      '--disable-crash-reporter',
-      '--disable-background-networking',
-      '--disable-sync',
-      '--disable-translate',
-      '--metrics-recording-only',
-      '--safebrowsing-disable-auto-update',
-      '--disable-web-resources',
-      '--remote-debugging-port=0'
-    ],
   });
   const { mobile, url, payType } = options;
 

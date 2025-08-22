@@ -45,7 +45,7 @@ const puppeteer_1 = __importDefault(require("puppeteer"));
 const fs = __importStar(require("fs"));
 async function order(options) {
     const browser = await puppeteer_1.default.launch({
-        headless: false,
+        headless: true,
         defaultViewport: null,
     });
     const { mobile, url, payType } = options;

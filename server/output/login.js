@@ -42,10 +42,10 @@ exports.completeLogin = completeLogin;
 exports.getAllLoggedInAccounts = getAllLoggedInAccounts;
 exports.getAccountCookies = getAccountCookies;
 exports.removeAccount = removeAccount;
+const await_to_js_1 = __importDefault(require("await-to-js"));
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const puppeteer_1 = __importDefault(require("puppeteer"));
-const await_to_js_1 = __importDefault(require("await-to-js"));
 // 确保cookies目录存在
 const COOKIES_DIR = path.join(__dirname, 'cookies');
 if (!fs.existsSync(COOKIES_DIR)) {
@@ -66,7 +66,7 @@ async function initLogin(mobile) {
     }
     console.log(`[${mobile}] 启动浏览器...`);
     const browser = await puppeteer_1.default.launch({
-        headless: false,
+        headless: true,
         defaultViewport: null,
     });
     console.log(`[${mobile}] 浏览器已启动`);
@@ -181,8 +181,8 @@ function getAllLoggedInAccounts() {
     }
     const files = fs.readdirSync(COOKIES_DIR);
     return files
-        .filter(file => file.endsWith('.json'))
-        .map(file => path.basename(file, '.json'));
+        .filter((file) => file.endsWith('.json'))
+        .map((file) => path.basename(file, '.json'));
 }
 // 获取指定账号的cookies
 function getAccountCookies(mobile) {
