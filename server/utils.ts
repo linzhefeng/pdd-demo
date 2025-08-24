@@ -18,7 +18,7 @@ export function getAccountCookiesPath(mobile: string): string {
 // 初始化浏览器实例
 export async function initBrowser() {
   return await puppeteer.launch({
-    headless: false,
+    headless: true,
     defaultViewport: null,
     args: [
       '--no-sandbox', // 允许 root 用户运行
