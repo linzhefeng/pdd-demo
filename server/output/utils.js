@@ -63,6 +63,13 @@ async function initBrowser() {
     return await puppeteer_1.default.launch({
         headless: false,
         defaultViewport: null,
+        args: [
+            '--no-sandbox', // 允许 root 用户运行
+            '--disable-setuid-sandbox', // 禁用 setuid 沙箱
+            '--disable-dev-shm-usage', // 解决 /dev/shm 空间不足问题（容器环境常见）
+            '--disable-gpu', // 非桌面环境禁用 GPU
+            '--remote-debugging-port=9222', // 可选：远程调试端口
+        ],
     });
 }
 // 创建并配置页面
