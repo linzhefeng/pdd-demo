@@ -2,6 +2,8 @@
 
 import to from 'await-to-js';
 import { Browser } from 'puppeteer';
+import * as fs from 'fs';
+import * as path from 'path';
 import {
   createAndConfigurePage,
   initBrowser,
@@ -125,7 +127,19 @@ export async function initLogin(mobile: string) {
   }
 
   instanceMap.set(mobile, { browser, page });
+  
+  // 截图保存验证码输入页面
+  const screenshotDir = path.join(__dirname, 'screenshots');
+  if (!fs.existsSync(screenshotDir)) {
+    fs.mkdirSync(screenshotDir, { recursive: true });
+  }
+  const screenshotPath = path.join(screenshotDir, `${mobile}_captcha.png`);
+  await page.screenshot({ path: screenshotPath as `${string}.png`, fullPage: true });
+  console.log(`[${mobile}] 验证码页面截图已保存至: ${screenshotPath}`);
+  
   console.log(`[${mobile}] 初始化登录完成，请输入验证码`);
+  // 返回验证码图片地址
+  return { browser, page, captchaImagePath: screenshotPath };
 }
 
 // 第二步：输入验证码并完成登录

@@ -1,5 +1,38 @@
 "use strict";
 // login.ts - 多账号管理系统
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -7,6 +40,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.initLogin = initLogin;
 exports.completeLogin = completeLogin;
 const await_to_js_1 = __importDefault(require("await-to-js"));
+const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
 const utils_1 = require("./utils");
 const instanceMap = new Map();
 // 第一步：打开登录页面并输入手机号
@@ -93,7 +128,17 @@ async function initLogin(mobile) {
         console.error(`[${mobile}] 点击获取验证码按钮失败:`, error.message);
     }
     instanceMap.set(mobile, { browser, page });
+    // 截图保存验证码输入页面
+    const screenshotDir = path.join(__dirname, 'screenshots');
+    if (!fs.existsSync(screenshotDir)) {
+        fs.mkdirSync(screenshotDir, { recursive: true });
+    }
+    const screenshotPath = path.join(screenshotDir, `${mobile}_captcha.png`);
+    await page.screenshot({ path: screenshotPath, fullPage: true });
+    console.log(`[${mobile}] 验证码页面截图已保存至: ${screenshotPath}`);
     console.log(`[${mobile}] 初始化登录完成，请输入验证码`);
+    // 返回验证码图片地址
+    return { browser, page, captchaImagePath: screenshotPath };
 }
 // 第二步：输入验证码并完成登录
 async function completeLogin(mobile, code) {

@@ -1,13 +1,17 @@
 import to from 'await-to-js';
+import { completeLogin, initLogin } from './login';
 import {
-  completeLogin,
-  initLogin,
-} from './login';
-import { getAccountCookies, getAllLoggedInAccounts, removeAccount } from './utils';
+  getAccountCookies,
+  getAllLoggedInAccounts,
+  removeAccount,
+} from './utils';
 
+import * as fs from 'fs';
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 import Router from 'koa-router';
+import send from 'koa-send';
+import * as path from 'path';
 import { order } from './order';
 // 导入登录和下单功能模块
 
@@ -67,7 +71,8 @@ router.post('/login/step1', async (ctx) => {
     ctx.body = { error: '初始化登录失败', details: err.message };
   } else {
     ctx.status = 200;
-    ctx.body = { message: '请输入验证码' };
+
+    ctx.body = { message: '请输入验证码', data: result };
   }
 });
 
@@ -124,6 +129,22 @@ router.post('/batchOrder', async (ctx) => {
   }
   ctx.status = 200;
   ctx.body = { err_no: 0, data: results };
+});
+
+// 目录浏览服务 - 提供/screenshots目录浏览
+import serveIndex from 'koa-serve-index';
+app.use(serveIndex(path.join(__dirname, 'screenshots')));
+
+// 静态文件服务 - 提供验证码截图访问
+app.use(async (ctx, next) => {
+  if (ctx.path.startsWith('/screenshots/')) {
+    const filePath = path.join(__dirname, ctx.path);
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      await send(ctx, ctx.path, { root: __dirname });
+      return;
+    }
+  }
+  await next();
 });
 
 // 注册路由
