@@ -128,7 +128,7 @@ async function initLogin(mobile) {
     // 点击获取验证码按钮（如果存在）
     console.log(`[${mobile}] 尝试点击获取验证码按钮...`);
     try {
-        await page.click('button[type="button"]:not([disabled])');
+        await page.click('#code-button');
         console.log(`[${mobile}] 获取验证码按钮已点击`);
     }
     catch (error) {
