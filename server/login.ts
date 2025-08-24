@@ -1,16 +1,19 @@
 // login.ts - 多账号管理系统
 
 import to from 'await-to-js';
-import { Browser } from 'puppeteer';
 import * as fs from 'fs';
 import * as path from 'path';
+import { Browser } from 'puppeteer';
 import {
   createAndConfigurePage,
   initBrowser,
   saveAccountCookies,
 } from './utils';
 
-const instanceMap = new Map<string, { browser: Browser; page: any }>();
+const instanceMap = new Map<
+  string,
+  { browser: Browser; page: any; timer: NodeJS.Timeout }
+>();
 
 // 第一步：打开登录页面并输入手机号
 export async function initLogin(mobile: string) {
@@ -56,8 +59,15 @@ export async function initLogin(mobile: string) {
   }
 
   console.log(`[${mobile}] 输入国际区号...`);
+  // 清空并重新输入国际区号
+  const internationalCodeInput = '.internation-code-input';
+  await to(page.focus(internationalCodeInput));
+  await page.keyboard.down('Meta');
+  await page.keyboard.press('KeyA');
+  await page.keyboard.up('Meta');
+  await page.keyboard.press('Backspace');
   const [typeCodeError, typeCodeResult] = await to(
-    page.type('.internation-code-input', '86')
+    page.type(internationalCodeInput, '86')
   );
   if (typeCodeError) {
     console.error(`[${mobile}] 输入国际区号失败:`, typeCodeError.message);
@@ -126,17 +136,27 @@ export async function initLogin(mobile: string) {
     console.error(`[${mobile}] 点击获取验证码按钮失败:`, error.message);
   }
 
-  instanceMap.set(mobile, { browser, page });
-  
+  // 设置3分钟后自动销毁浏览器实例
+  const timer = setTimeout(() => {
+    console.log(`[${mobile}] 浏览器实例已超时，正在自动销毁...`);
+    browser.close();
+    instanceMap.delete(mobile);
+  }, 3 * 60 * 1000); // 3分钟
+
+  instanceMap.set(mobile, { browser, page, timer });
+
   // 截图保存验证码输入页面
   const screenshotDir = path.join(__dirname, 'screenshots');
   if (!fs.existsSync(screenshotDir)) {
     fs.mkdirSync(screenshotDir, { recursive: true });
   }
   const screenshotPath = path.join(screenshotDir, `${mobile}_captcha.png`);
-  await page.screenshot({ path: screenshotPath as `${string}.png`, fullPage: true });
+  await page.screenshot({
+    path: screenshotPath as `${string}.png`,
+    fullPage: true,
+  });
   console.log(`[${mobile}] 验证码页面截图已保存至: ${screenshotPath}`);
-  
+
   console.log(`[${mobile}] 初始化登录完成，请输入验证码`);
   // 返回验证码图片地址
   return { browser, page, captchaImagePath: screenshotPath };
@@ -148,7 +168,10 @@ export async function completeLogin(mobile: string, code: string) {
   if (!instance) {
     throw new Error('请先调用initLogin初始化登录');
   }
-  const { browser, page } = instance;
+  const { browser, page, timer } = instance;
+
+  // 清除定时器
+  clearTimeout(timer);
 
   // 等待验证码输入框出现 id input-code
   await page.waitForSelector('#input-code', {
