@@ -183,19 +183,51 @@ export async function completeLogin(mobile: string, code: string) {
   // 清除定时器
   clearTimeout(timer);
 
-  // 等待验证码输入框出现 id input-code
-  await page.waitForSelector('#input-code', {
-    timeout: 10000,
-  });
+  // 输入验证码
+  const [typeCodeError, typeCodeResult] = await to(
+    page.type('#input-code', code)
+  );
+  if (typeCodeError) {
+    console.error(`[${mobile}] 输入验证码失败:`, typeCodeError.message);
+  } else {
+    console.log(`[${mobile}] 验证码已输入`);
+  }
 
   // 输入验证码
-  await page.type('#input-code', code);
+  const [typeCodeError2, typeCodeResult2] = await to(
+    page.type('#captcha', code)
+  );
+  if (typeCodeError2) {
+    console.error(`[${mobile}] 输入验证码失败:`, typeCodeError2.message);
+  } else {
+    console.log(`[${mobile}] 验证码已输入`);
+  }
 
   // click .agreement-icon
-  await page.click('.agreement-icon');
+  const [clickError, clickResult] = await to(page.click('.agreement-icon'));
+  if (clickError) {
+    console.error(`[${mobile}] 点击协议图标失败:`, clickError.message);
+  } else {
+    console.log(`[${mobile}] 协议图标已点击`);
+  }
 
   // 点击登录按钮
-  await page.click('button[type="submit"]');
+  const [clickError2, clickResult2] = await to(
+    page.click('button[type="submit"]')
+  );
+  if (clickError2) {
+    console.error(`[${mobile}] 点击登录按钮失败:`, clickError2.message);
+  } else {
+    console.log(`[${mobile}] 登录按钮已点击`);
+  }
+
+  // 点击登录按钮
+  const [clickError3, clickResult3] = await to(page.click('#submit-btn'));
+  if (clickError3) {
+    console.error(`[${mobile}] 点击登录按钮失败:`, clickError3.message);
+  } else {
+    console.log(`[${mobile}] 登录按钮已点击`);
+  }
 
   // 等待登录完成
   await page.waitForNavigation({ waitUntil: 'networkidle2' });
