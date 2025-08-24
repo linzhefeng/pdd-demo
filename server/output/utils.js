@@ -61,7 +61,7 @@ function getAccountCookiesPath(mobile) {
 // 初始化浏览器实例
 async function initBrowser() {
     return await puppeteer_1.default.launch({
-        headless: false,
+        headless: true,
         defaultViewport: null,
         args: [
             '--no-sandbox', // 允许 root 用户运行
