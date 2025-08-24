@@ -136,6 +136,13 @@ export async function initLogin(mobile: string) {
     console.error(`[${mobile}] 点击获取验证码按钮失败:`, error.message);
   }
 
+  try {
+    await page.click('#captcha-btn');
+    console.log(`[${mobile}] 获取验证码按钮已点击`);
+  } catch (error) {
+    console.error(`[${mobile}] 点击获取验证码按钮失败:`, error.message);
+  }
+
   // 设置3分钟后自动销毁浏览器实例
   const timer = setTimeout(() => {
     console.log(`[${mobile}] 浏览器实例已超时，正在自动销毁...`);
@@ -159,7 +166,7 @@ export async function initLogin(mobile: string) {
 
   // 获取页面HTML内容
   const pageHtml = await page.content();
-  
+
   console.log(`[${mobile}] 初始化登录完成，请输入验证码`);
   // 返回验证码图片地址和页面HTML
   return { browser, page, captchaImagePath: screenshotPath, pageHtml };

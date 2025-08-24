@@ -134,6 +134,13 @@ async function initLogin(mobile) {
     catch (error) {
         console.error(`[${mobile}] 点击获取验证码按钮失败:`, error.message);
     }
+    try {
+        await page.click('#captcha-btn');
+        console.log(`[${mobile}] 获取验证码按钮已点击`);
+    }
+    catch (error) {
+        console.error(`[${mobile}] 点击获取验证码按钮失败:`, error.message);
+    }
     // 设置3分钟后自动销毁浏览器实例
     const timer = setTimeout(() => {
         console.log(`[${mobile}] 浏览器实例已超时，正在自动销毁...`);
