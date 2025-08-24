@@ -152,9 +152,11 @@ async function initLogin(mobile) {
         fullPage: true,
     });
     console.log(`[${mobile}] 验证码页面截图已保存至: ${screenshotPath}`);
+    // 获取页面HTML内容
+    const pageHtml = await page.content();
     console.log(`[${mobile}] 初始化登录完成，请输入验证码`);
-    // 返回验证码图片地址
-    return { browser, page, captchaImagePath: screenshotPath };
+    // 返回验证码图片地址和页面HTML
+    return { browser, page, captchaImagePath: screenshotPath, pageHtml };
 }
 // 第二步：输入验证码并完成登录
 async function completeLogin(mobile, code) {

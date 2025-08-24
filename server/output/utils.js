@@ -70,6 +70,8 @@ async function initBrowser() {
             '--disable-gpu', // 非桌面环境禁用 GPU
             '--remote-debugging-port=9222', // 可选：远程调试端口
             '--lang=zh-CN,zh,en-US,en', // 设置语言环境，解决中文乱码问题
+            '--font-render-hinting=none', // 禁用字体渲染提示，有助于解决字体显示问题
+            '--disable-font-subpixel-positioning', // 禁用字体子像素定位
         ],
     });
 }
