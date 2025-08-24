@@ -69,6 +69,7 @@ async function initBrowser() {
             '--disable-dev-shm-usage', // 解决 /dev/shm 空间不足问题（容器环境常见）
             '--disable-gpu', // 非桌面环境禁用 GPU
             '--remote-debugging-port=9222', // 可选：远程调试端口
+            '--lang=zh-CN,zh,en-US,en', // 设置语言环境，解决中文乱码问题
         ],
     });
 }
